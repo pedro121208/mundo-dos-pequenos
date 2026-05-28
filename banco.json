@@ -1,0 +1,42 @@
+{
+  "clinica": {
+    "nome": "Mundo dos Pequenos",
+    "telefone": "(11) 98989-9909",
+    "email": "mundodospequenos@gmail.com",
+    "endereco": "Rua Itapeva 35 - São Paulo, SP",
+    "horario": "Seg - Sex 08h às 20h, Sáb 10h às 18h"
+  },
+  "especialidades": [
+    {
+      "id": "nutricao",
+      "nome": "Nutrição Infantil",
+      "imagem": "img/nutricao.jpg"
+    },
+    { "id": "cardio", "nome": "Cardiopediatria", "imagem": "img/cardio.jpg" },
+    { "id": "neuro", "nome": "Neuropediatria", "imagem": "img/neuro.jpg" },
+    {
+      "id": "ortopedia",
+      "nome": "Ortopedia Infantil",
+      "imagem": "img/ortopedia.jpg"
+    },
+    { "id": "pneumo", "nome": "Pneumopediatria", "imagem": "img/pneumo.jpg" }
+  ],
+  "agendamentos": [],
+  "usuarios": [
+    {
+      "nome": "Paciente Teste",
+      "email": "paciente@teste.com",
+      "telefone": "11999999999",
+      "senha": "123"
+    }
+  ],
+  "medicos": [
+    {
+      "nome": "Dr. Carlos Eduardo",
+      "crm": "123456-SP",
+      "especialidade": "Cardiopediatria",
+      "email": "medico@teste.com",
+      "senha": "123"
+    }
+  ]
+}

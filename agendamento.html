@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo dos Pequenos - Agendamento Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="page-agendamento">
+
+    <header class="navbar">
+        <h2>Mundo dos Pequenos</h2>
+        <button type="button" onclick="window.location.href='index.html'" class="btn-outline-purple">Voltar</button>
+    </header>
+
+    <main class="agendamento-container">
+        <div class="agendamento-box">
+            <div class="form-title">
+                <h2>Marcar Nova Consulta</h2>
+                <p>O sistema valida e remove automaticamente horários indisponíveis.</p>
+            </div>
+
+            <form id="formAgendamentoClinica">
+                <div class="form-group">
+                    <label>Nome da Criança</label>
+                    <input type="text" id="txtNomeCriante" required>
+                </div>
+                <div class="form-group">
+                    <label>Especialidade Médica</label>
+                    <select id="selectEspecialidadeFiltro" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Cardiopediatria">Cardiopediatria</option>
+                        <option value="Nutrição Infantil">Nutrição Infantil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Médico Especialista</label>
+                    <select id="selectMedicoDisponivel" disabled required></select>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Data</label>
+                        <input type="date" id="dateConsultaAgendada" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Horário</label>
+                        <select id="selectHorarioEscolhido" required>
+                            <option value="" disabled selected>Escolha o horário...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Sintomas / Notas</label>
+                    <textarea id="txtSintomasObservados" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn-primary bulk-btn">Salvar Consulta</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sessao = JSON.parse(sessionStorage.getItem('sessao_ativa'));
+            if (!sessao || sessao.perfil !== 'paciente') { window.location.href = 'index.html'; return; }
+
+            const campoData = document.getElementById('dateConsultaAgendada');
+            const selectHorario = document.getElementById('selectHorarioEscolhido');
+            const hoje = new Date().toISOString().split('T')[0];
+            campoData.setAttribute('min', hoje);
+
+            // Geração Dinâmica de Horários Comerciais de 30 em 30 min
+            function preencherHorarios() {
+                selectHorario.innerHTML = '<option value="" disabled selected>Escolha o horário...</option>';
+                for (let h = 8; h < 20; h++) {
+                    let hStr = String(h).padStart(2, '0');
+                    ['00', '30'].forEach(m => {
+                        let opt = document.createElement('option');
+                        opt.value = `${hStr}:${m}`; opt.textContent = `${hStr}:${m}`;
+                        selectHorario.appendChild(opt);
+                    });
+                }
+            }
+            preencherHorarios();
+
+            // BLOQUEIO INTELIGENTE: Impede escolha de finais de semana e horários passados
+            campoData.addEventListener('change', () => {
+                let dataEscolhida = new Date(campoData.value + 'T00:00:00');
+                let diaSemana = dataEscolhida.getDay(); // 0 = Domingo, 6 = Sábado
+                
+                if(diaSemana === 0 || diaSemana === 6) {
+                    Swal.fire({ text: 'A clínica realiza atendimentos apenas de Segunda a Sexta-feira.', icon: 'warning' });
+                    campoData.value = '';
+                    return;
+                }
+
+                // Se a data for hoje, remove horários que já passaram do relógio atual
+                preencherHorarios();
+                if(campoData.value === hoje) {
+                    let agora = new Date();
+                    let horaAtual = agora.getHours();
+                    let minAtual = agora.getMinutes();
+
+                    Array.from(selectHorario.options).forEach(opt => {
+                        if(opt.value) {
+                            let [hO, mO] = opt.value.split(':').map(Number);
+                            if(hO < horaAtual || (hO === horaAtual && mO <= minAtual)) {
+                                opt.remove();
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Controle de Médicos Dinâmicos
+            document.getElementById('selectEspecialidadeFiltro').addEventListener('change', (e) => {
+                const medicos = JSON.parse(localStorage.getItem('banco_medicos')) || [];
+                const filtrados = medicos.filter(m => m.especialidade === e.target.value);
+                const sm = document.getElementById('selectMedicoDisponivel');
+                
+                sm.innerHTML = '<option value="" disabled selected>Escolha...</option>';
+                if(filtrados.length > 0) {
+                    filtrados.forEach(m => { sm.innerHTML += `<option value="${m.nome}" data-id="${m.id || m.email}">${m.nome}</option>`; });
+                    sm.disabled = false;
+                } else {
+                    sm.disabled = true;
+                }
+            });
+
+            document.getElementById('formAgendamentoClinica').addEventListener('submit', (e) => {
+                e.preventDefault();
+                let sm = document.getElementById('selectMedicoDisponivel');
+                let medicoOpt = sm.options[sm.selectedIndex];
+
+                let novoAg = {
+                    id_agendamento: 'ag_' + Date.now(),
+                    responsavel_id: sessao.id,
+                    responsavel_nome: sessao.nome,
+                    paciente_infantil: document.getElementById('txtNomeCriante').value.trim(),
+                    especialidade: document.getElementById('selectEspecialidadeFiltro').value,
+                    medico_id: medicoOpt.getAttribute('data-id'),
+                    medico_designado: sm.value,
+                    data_consulta: campoData.value,
+                    horario_consulta: selectHorario.value,
+                    observacoes: document.getElementById('txtSintomasObservados').value.trim(),
+                    evolucao_medica: "", // Prontuário limpo para o médico preencher
+                    status: "Confirmado"
+                };
+
+                let todos = JSON.parse(localStorage.getItem('banco_agendamentos')) || [];
+                if(todos.some(a => a.medico_id === novoAg.medico_id && a.data_consulta === novoAg.data_consulta && a.horario_consulta === novoAg.horario_consulta)) {
+                    Swal.fire({ text: 'Este médico já tem consulta marcada neste horário!', icon: 'error' });
+                    return;
+                }
+
+                todos.push(novoAg);
+                localStorage.setItem('banco_agendamentos', JSON.stringify(todos));
+                Swal.fire({ icon: 'success', title: 'Consulta Marcada!' }).then(() => window.location.href = 'meus-agendamentos.html');
+            });
+        });
+    </script>
+</body>
+</html>

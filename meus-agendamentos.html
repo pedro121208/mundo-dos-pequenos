@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mundo dos Pequenos - Minhas Consultas</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      .tabs-header {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #efe9f8;
+        padding-bottom: 10px;
+      }
+      .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        font-weight: 500;
+        cursor: pointer;
+        color: #7d6b99;
+        font-family: inherit;
+      }
+      .tab-btn.active {
+        color: var(--primary-purple);
+        border-bottom: 3px solid var(--primary-purple);
+        font-weight: 600;
+      }
+      .prontuario-badge {
+        background: #e2f1ff;
+        color: #0056b3;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        margin-top: 12px;
+        display: block;
+        border-left: 3px solid #0056b3;
+      }
+
+      /* Estilo do Estado Vazio Premium */
+      .empty-portal {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 8px 24px rgba(74, 48, 109, 0.02);
+        border: 1px dashed #c882e8;
+        max-width: 500px;
+        margin: 50px auto;
+      }
+      .empty-portal i {
+        font-size: 3.5rem;
+        color: #e2d9f3;
+        margin-bottom: 20px;
+      }
+      .empty-portal h3 {
+        color: var(--dark-purple);
+        margin-bottom: 10px;
+      }
+      .empty-portal p {
+        color: #7d6b99;
+        font-size: 0.9rem;
+        margin-bottom: 25px;
+      }
+    </style>
+  </head>
+  <body class="page-agendamento" style="background: #f8f6fc; min-height: 100vh">
+    <header class="navbar" style="background: white">
+      <h2>Mundo dos Pequenos</h2>
+      <button
+        type="button"
+        onclick="window.location.href = 'index.html'"
+        class="btn-outline-purple"
+      >
+        Voltar ao Home
+      </button>
+    </header>
+
+    <main
+      class="dashboard-container"
+      style="max-width: 1000px; margin: 40px auto; padding: 0 20px"
+    >
+      <div
+        class="dashboard-header"
+        style="
+          background: white;
+          padding: 30px;
+          border-radius: 24px;
+          text-align: center;
+          margin-bottom: 30px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+        "
+      >
+        <i
+          class="fa-regular fa-calendar-check"
+          style="
+            font-size: 2.5rem;
+            color: var(--primary-purple);
+            margin-bottom: 10px;
+          "
+        ></i>
+        <h2>Central de Consultas do Paciente</h2>
+        <p>
+          Acompanhe seus horários agendados e consulte os prontuários liberados
+          pelos pediatras.
+        </p>
+      </div>
+
+      <div class="tabs-header">
+        <button class="tab-btn active" id="tabProximas">
+          Próximas Consultas
+        </button>
+        <button class="tab-btn" id="tabHistorico">
+          Histórico (Passadas / Concluídas)
+        </button>
+      </div>
+
+      <div
+        id="gridAgendamentos"
+        class="cards-grid"
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 20px;
+        "
+      ></div>
+
+      <div id="mensagemVazia" class="empty-portal hidden">
+        <i class="fa-regular fa-calendar-times"></i>
+        <h3>Nenhum agendamento por aqui</h3>
+        <p>
+          Você não possui nenhuma consulta registrada nesta categoria no
+          momento.
+        </p>
+        <button
+          onclick="window.location.href = 'agendamento.html'"
+          class="btn-primary"
+        >
+          <i class="fa-solid fa-plus"></i> Agendar Nova Consulta
+        </button>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sessao =
+          JSON.parse(sessionStorage.getItem("sessao_active")) ||
+          JSON.parse(sessionStorage.getItem("sessao_ativa"));
+        if (!sessao) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        let abaAtiva = "proximas";
+        const grid = document.getElementById("gridAgendamentos");
+        const msgVazia = document.getElementById("mensagemVazia");
+
+        document
+          .getElementById("tabProximas")
+          .addEventListener("click", (e) => {
+            alternarAba("proximas", e.target);
+          });
+        document
+          .getElementById("tabHistorico")
+          .addEventListener("click", (e) => {
+            alternarAba("historico", e.target);
+          });
+
+        function alternarAba(aba, elemento) {
+          abaAtiva = aba;
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          elemento.classList.add("active");
+          carregarCards();
+        }
+
+        function carregarCards() {
+          const todos =
+            JSON.parse(localStorage.getItem("banco_agendamentos")) || [];
+          // Garante filtrar apenas as consultas criadas por este paciente logado
+          let filtrados = todos.filter((a) => a.responsavel_id === sessao.id);
+          let hoje = new Date().toISOString().split("T")[0];
+
+          if (abaAtiva === "proximas") {
+            filtrados = filtrados.filter(
+              (a) => a.data_consulta >= hoje && a.status !== "Concluído",
+            );
+          } else {
+            filtrados = filtrados.filter(
+              (a) => a.data_consulta < hoje || a.status === "Concluído",
+            );
+          }
+
+          grid.innerHTML = "";
+
+          if (filtrados.length === 0) {
+            msgVazia.classList.remove("hidden");
+            return;
+          }
+          msgVazia.classList.add("hidden");
+
+          filtrados.forEach((ag) => {
+            let dataF = ag.data_consulta.split("-").reverse().join("/");
+            let card = document.createElement("div");
+            card.className = "appointment-card";
+            card.style.background = "white";
+            card.style.padding = "24px";
+            card.style.borderRadius = "20px";
+            card.style.border = "1px solid #EFE9F8";
+            card.style.display = "flex";
+            card.style.flexDirection = "column";
+            card.style.justifyContent = "space-between";
+
+            let botaoAcao = "";
+            if (abaAtiva === "proximas") {
+              botaoAcao = `<button onclick="cancelar('${ag.id_agendamento}')" class="btn-card-cancel" style="margin-top:15px;"><i class="fa-regular fa-trash-can"></i> Desmarcar Consulta</button>`;
+            }
+
+            card.innerHTML = `
+                        <div>
+                            <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; border-bottom:1px dashed #EFE9F8; padding-bottom:10px;">
+                                <span style="font-weight:600; font-size:0.8rem; background:#F4EEFF; padding:4px 12px; border-radius:20px; color:var(--dark-purple);"><i class="fa-regular fa-clock"></i> ${dataF} às ${ag.horario_consulta}</span>
+                                <span style="font-size:0.75rem; font-weight:600; padding:4px 10px; border-radius:20px; background:${ag.status === "Concluído" ? "#E8FBF0" : "#E6F4FF"}; color:${ag.status === "Concluído" ? "#107C41" : "#0070E0"}; margin-left:auto;">${ag.status}</span>
+                            </div>
+                            <span style="font-size:0.75rem; color:#8978a5; text-transform:uppercase;">Criança</span>
+                            <h3 style="margin:2px 0 10px 0; font-size:1.3rem; color:var(--dark-purple);">${ag.paciente_infantil}</h3>
+                            <p style="font-size:0.85rem; color:#554370; margin-bottom:4px;"><i class="fa-solid fa-user-doctor" style="color:var(--primary-purple)"></i> Pediatra: <strong>${ag.medico_designado}</strong></p>
+                            <p style="font-size:0.85rem; color:#554370;"><i class="fa-solid fa-stethoscope" style="color:var(--primary-purple)"></i> Área: <strong>${ag.especialidade}</strong></p>
+                            
+                            ${ag.evolucao_medica ? `<div class="prontuario-badge"><strong><i class="fa-solid fa-prescription-bottle-medical"></i> Prontuário & Receita:</strong><br>"${ag.evolucao_medica}"</div>` : ""}
+                        </div>
+                        ${botaoAcao}
+                    `;
+            grid.appendChild(card);
+          });
+        }
+
+        window.cancelar = (id) => {
+          Swal.fire({
+            title: "Deseja cancelar?",
+            text: "Essa vaga será liberada para outros pacientes.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#D93838",
+            confirmButtonText: "Sim, cancelar",
+            cancelButtonText: "Voltar",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              let todos =
+                JSON.parse(localStorage.getItem("banco_agendamentos")) || [];
+              todos = todos.filter((a) => a.id_agendamento !== id);
+              localStorage.setItem("banco_agendamentos", JSON.stringify(todos));
+              Swal.fire(
+                "Cancelada!",
+                "A consulta foi desmarcada.",
+                "success",
+              ).then(() => carregarCards());
+            }
+          });
+        };
+
+        carregarCards();
+      });
+    </script>
+  </body>
+</html>

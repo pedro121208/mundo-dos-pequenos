@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mundo dos Pequenos - Clínica Pediátrica</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght=600;700&family=Poppins:wght=300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div id="authContainer" class="auth-overlay hidden">
+      <div class="auth-box">
+        <div class="auth-close-btn" id="btnFecharAuth">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+        <div class="auth-header">
+          <h2>Mundo dos Pequenos</h2>
+          <p>Escolha seu perfil para continuar:</p>
+
+          <div class="profile-selector">
+            <button
+              type="button"
+              id="btnPerfilPaciente"
+              class="btn-profile active"
+            >
+              <i class="fa-solid fa-user"></i> Paciente
+            </button>
+            <button type="button" id="btnPerfilMedico" class="btn-profile">
+              <i class="fa-solid fa-user-doctor"></i> Médico
+            </button>
+          </div>
+        </div>
+
+        <div id="boxLogin" class="auth-form-box">
+          <h3>
+            Acessar Conta como
+            <span id="lblPerfilLogin" class="highlight-text">Paciente</span>
+          </h3>
+          <form id="formLogin" autocomplete="off">
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="Seu e-mail de acesso"
+              required
+            />
+            <input
+              type="password"
+              id="loginSenha"
+              placeholder="Sua senha"
+              required
+            />
+            <button type="submit" class="btn-primary bulk-btn">
+              Entrar no Sistema
+            </button>
+          </form>
+          <p class="auth-switch">
+            Não tem uma conta?
+            <a href="#" id="linkIrParaCadastro">Cadastre-se aqui</a>
+          </p>
+        </div>
+
+        <div id="boxCadastro" class="auth-form-box hidden">
+          <h3>
+            Criar Conta de
+            <span id="lblPerfilCadastro" class="highlight-text">Paciente</span>
+          </h3>
+          <form id="formCadastro" autocomplete="off">
+            <input
+              type="text"
+              id="cadNome"
+              placeholder="Nome Completo"
+              required
+            />
+            <input
+              type="email"
+              id="cadEmail"
+              placeholder="Seu melhor e-mail"
+              required
+            />
+            <div id="wrapperCampoDinamico">
+              <input
+                type="tel"
+                id="cadTelefone"
+                placeholder="WhatsApp / Telefone com DDD"
+                required
+              />
+            </div>
+            <input
+              type="password"
+              id="cadSenha"
+              placeholder="Crie uma senha de acesso"
+              required
+            />
+            <button type="submit" class="btn-primary bulk-btn">
+              Finalizar Registro
+            </button>
+          </form>
+          <p class="auth-switch">
+            Já possui uma conta?
+            <a href="#" id="linkIrParaLogin">Faça Login aqui</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="mainContent">
+      <header class="navbar">
+        <div class="logo">
+          <h2>Mundo dos Pequenos</h2>
+        </div>
+        <nav class="nav-links">
+          <a href="#home">Home</a>
+          <a href="#especialidades">Especialidades</a>
+          <a href="#sobre">Sobre</a>
+          <a href="#medicos">Equipe</a>
+          <a href="#depoimentos">Depoimentos</a>
+          <a
+            href="#"
+            id="linkMeusAgendamentos"
+            style="color: var(--primary-purple); font-weight: 600"
+            ><i class="fa-regular fa-calendar-check"></i> Consultas</a
+          >
+          <a
+            href="#"
+            id="linkVacinas"
+            class="hidden"
+            style="color: #107c41; font-weight: 600"
+            ><i class="fa-solid fa-syringe"></i> Vacinação</a
+          >
+        </nav>
+        <div class="nav-actions">
+          <div
+            class="notification-bell"
+            id="btnNotificacoes"
+            title="Notificações"
+            style="
+              cursor: pointer;
+              position: relative;
+              margin-right: 15px;
+              font-size: 1.2rem;
+              color: var(--dark-purple);
+            "
+          >
+            <i class="fa-regular fa-bell"></i>
+            <span
+              class="bell-badge hidden"
+              id="numNotificacoes"
+              style="
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #d93838;
+                color: white;
+                border-radius: 50%;
+                padding: 2px 6px;
+                font-size: 0.65rem;
+                font-weight: 700;
+              "
+              >0</span
+            >
+          </div>
+
+          <span id="userBadge" class="user-badge hidden"
+            ><i class="fa-solid fa-circle-user"></i>
+            <span id="lblMensagemBoasVindas">Olá,</span>
+            <strong id="lblNomeUsuario">Usuário</strong></span
+          >
+          <button type="button" id="btnSair" class="btn-outline-small hidden">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+          </button>
+          <button
+            type="button"
+            id="btnEntrarNav"
+            class="btn-primary"
+            style="padding: 6px 20px"
+          >
+            Entrar
+          </button>
+        </div>
+      </header>
+
+      <section id="home" class="hero">
+        <div class="hero-content">
+          <span class="status-pill"
+            ><i class="fa-solid fa-circle"></i> Clínica aberta • Atendendo
+            agora</span
+          >
+          <h1>
+            Cuidado, amor e saúde para o seu
+            <span>maior tesouro <i class="fa-regular fa-heart"></i></span>
+          </h1>
+          <p>
+            Acolhimento humanizado e infraestrutura completa em todas as fases
+            da infância e adolescência.
+          </p>
+          <div class="hero-buttons">
+            <button type="button" id="heroBtnAgendar" class="btn-primary">
+              <i class="fa-regular fa-calendar"></i> Agendar consulta
+            </button>
+            <a href="#especialidades" class="btn-outline">Ver Especialidades</a>
+          </div>
+        </div>
+        <div class="hero-image">
+          <img
+            src="img/imagem1.jpg"
+            alt="Médica e bebê sorrindo"
+            onerror="
+              this.src =
+                'https://placehold.co/450x450/C882E8/FFF?text=Mundo+dos+Pequenos'
+            "
+          />
+        </div>
+      </section>
+
+      <section
+        id="especialidades"
+        class="specialties"
+        style="padding: 60px 20px; text-align: center; background: #fff"
+      >
+        <h2
+          style="
+            font-family: &quot;Playfair Display&quot;, serif;
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+            color: var(--dark-purple);
+          "
+        >
+          Nossas Especialidades
+        </h2>
+        <div
+          class="specialties-grid"
+          style="
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+          "
+        >
+          <div class="specialty-card" style="text-align: center; width: 160px">
+            <div
+              class="specialty-circle"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 15px;
+                border: 3px solid #f4eeff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+              "
+            >
+              <img
+                src="img/nutricao.jpg"
+                alt="Nutrição Infantil"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                  this.src =
+                    'https://placehold.co/120x120/C882E8/FFF?text=Nutrição'
+                "
+              />
+            </div>
+            <h3
+              style="
+                font-size: 1.1rem;
+                color: var(--dark-purple);
+                font-weight: 600;
+              "
+            >
+              Nutrição Infantil
+            </h3>
+          </div>
+
+          <div class="specialty-card" style="text-align: center; width: 160px">
+            <div
+              class="specialty-circle"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 15px;
+                border: 3px solid #f4eeff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+              "
+            >
+              <img
+                src="img/cardio.jpg"
+                alt="Cardiopediatria"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                  this.src =
+                    'https://placehold.co/120x120/C882E8/FFF?text=Cardio'
+                "
+              />
+            </div>
+            <h3
+              style="
+                font-size: 1.1rem;
+                color: var(--dark-purple);
+                font-weight: 600;
+              "
+            >
+              Cardiopediatria
+            </h3>
+          </div>
+
+          <div class="specialty-card" style="text-align: center; width: 160px">
+            <div
+              class="specialty-circle"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 15px;
+                border: 3px solid #f4eeff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+              "
+            >
+              <img
+                src="img/neuro.jpg"
+                alt="Neuropediatria"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                  this.src =
+                    'https://placehold.co/120x120/C882E8/FFF?text=Neuro'
+                "
+              />
+            </div>
+            <h3
+              style="
+                font-size: 1.1rem;
+                color: var(--dark-purple);
+                font-weight: 600;
+              "
+            >
+              Neuropediatria
+            </h3>
+          </div>
+
+          <div class="specialty-card" style="text-align: center; width: 160px">
+            <div
+              class="specialty-circle"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 15px;
+                border: 3px solid #f4eeff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+              "
+            >
+              <img
+                src="img/ortopedia.jpg"
+                alt="Ortopedia Infantil"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                  this.src =
+                    'https://placehold.co/120x120/C882E8/FFF?text=Ortopedia'
+                "
+              />
+            </div>
+            <h3
+              style="
+                font-size: 1.1rem;
+                color: var(--dark-purple);
+                font-weight: 600;
+              "
+            >
+              Ortopedia Infantil
+            </h3>
+          </div>
+
+          <div class="specialty-card" style="text-align: center; width: 160px">
+            <div
+              class="specialty-circle"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 15px;
+                border: 3px solid #f4eeff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+              "
+            >
+              <img
+                src="img/pneumo.jpg"
+                alt="Pneumopediatria"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                  this.src =
+                    'https://placehold.co/120x120/C882E8/FFF?text=Pneumo'
+                "
+              />
+            </div>
+            <h3
+              style="
+                font-size: 1.1rem;
+                color: var(--dark-purple);
+                font-weight: 600;
+              "
+            >
+              Pneumopediatria
+            </h3>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="sobre"
+        class="about"
+        style="
+          padding: 80px 20px;
+          background: linear-gradient(180deg, #fff 0%, #f4eeff 100%);
+        "
+      >
+        <div
+          class="about-container"
+          style="
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+          "
+        >
+          <div class="about-content" style="flex: 1">
+            <h2
+              style="
+                font-family: &quot;Playfair Display&quot;, serif;
+                font-size: 2.5rem;
+                color: var(--dark-purple);
+                margin-bottom: 20px;
+              "
+            >
+              Um espaço feito sob medida para os pequenos
+            </h2>
+            <p style="color: #554370; line-height: 1.7; margin-bottom: 15px">
+              A Mundo dos Pequenos nasceu do desejo de transformar a ida ao
+              médico em uma experiência leve, acolhedora e totalmente livre de
+              medos.
+            </p>
+            <p style="color: #554370; line-height: 1.7">
+              Contamos com consultórios lúdicos, profissionais altamente
+              qualificados e um ambiente preparado para oferecer o melhor
+              atendimento clínico e humanizado.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="medicos"
+        class="doctors"
+        style="padding: 60px 20px; text-align: center; background: white"
+      >
+        <h2
+          style="
+            font-family: &quot;Playfair Display&quot;, serif;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--dark-purple);
+          "
+        >
+          Nossos Especialistas
+        </h2>
+        <p style="color: #7d6b99; margin-bottom: 40px">
+          Profissionais preparados para cuidar com dedicação e carinho.
+        </p>
+        <div
+          class="doctors-grid"
+          style="
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+          "
+        >
+          <div
+            class="doctor-card"
+            style="
+              background: white;
+              border: 1px solid #efe9f8;
+              border-radius: 20px;
+              padding: 25px;
+              width: 260px;
+              box-shadow: 0 6px 18px rgba(74, 48, 109, 0.02);
+            "
+          >
+            <img
+              src="https://placehold.co/120x120/EFE9F8/6c5a85?text=Dr"
+              style="border-radius: 50%; margin-bottom: 15px"
+              alt="Médico"
+            />
+            <h3 style="color: var(--dark-purple); font-size: 1.2rem">
+              Dr. Carlos Eduardo
+            </h3>
+            <p
+              style="
+                color: var(--primary-purple);
+                font-size: 0.9rem;
+                font-weight: 500;
+                margin-top: 4px;
+              "
+            >
+              Cardiopediatria
+            </p>
+            <span
+              style="
+                font-size: 0.75rem;
+                color: #998cb0;
+                display: block;
+                margin-top: 5px;
+              "
+              >CRM 123456-SP</span
+            >
+          </div>
+          <div
+            class="doctor-card"
+            style="
+              background: white;
+              border: 1px solid #efe9f8;
+              border-radius: 20px;
+              padding: 25px;
+              width: 260px;
+              box-shadow: 0 6px 18px rgba(74, 48, 109, 0.02);
+            "
+          >
+            <img
+              src="https://placehold.co/120x120/EFE9F8/6c5a85?text=Dra"
+              style="border-radius: 50%; margin-bottom: 15px"
+              alt="Médica"
+            />
+            <h3 style="color: var(--dark-purple); font-size: 1.2rem">
+              Dra. Mariana Costa
+            </h3>
+            <p
+              style="
+                color: var(--primary-purple);
+                font-size: 0.9rem;
+                font-weight: 500;
+                margin-top: 4px;
+              "
+            >
+              Nutrição Infantil
+            </p>
+            <span
+              style="
+                font-size: 0.75rem;
+                color: #998cb0;
+                display: block;
+                margin-top: 5px;
+              "
+              >CRN 78910-SP</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="depoimentos"
+        class="testimonials"
+        style="padding: 80px 20px; background: #fdfbff; text-align: center"
+      >
+        <h2
+          style="
+            font-family: &quot;Playfair Display&quot;, serif;
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+            color: var(--dark-purple);
+          "
+        >
+          O que os pais dizem
+        </h2>
+        <div
+          class="testimonials-container"
+          style="
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+          "
+        >
+          <div
+            class="testimonial-card"
+            style="
+              background: white;
+              padding: 30px;
+              border-radius: 20px;
+              width: 280px;
+              border: 1px solid #f4eeff;
+              text-align: left;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            "
+          >
+            <div style="color: #ffba69; margin-bottom: 10px">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+              ><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+              ><i class="fa-solid fa-star"></i>
+            </div>
+            <p
+              style="
+                font-style: italic;
+                color: #554370;
+                font-size: 0.9rem;
+                line-height: 1.6;
+              "
+            >
+              "O atendimento é maravilhoso. Meu filho adora os brinquedos do
+              consultório e nem percebe que está em uma consulta médica!"
+            </p>
+            <strong
+              style="
+                display: block;
+                margin-top: 15px;
+                color: var(--dark-purple);
+                font-size: 0.85rem;
+              "
+              >— Renata Lima, mãe do Leo</strong
+            >
+          </div>
+          <div
+            class="testimonial-card"
+            style="
+              background: white;
+              padding: 30px;
+              border-radius: 20px;
+              width: 280px;
+              border: 1px solid #f4eeff;
+              text-align: left;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            "
+          >
+            <div style="color: #ffba69; margin-bottom: 10px">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+              ><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
+              ><i class="fa-solid fa-star"></i>
+            </div>
+            <p
+              style="
+                font-style: italic;
+                color: #554370;
+                font-size: 0.9rem;
+                line-height: 1.6;
+              "
+            >
+              "Médicos extremamente pacientes e atenciosos. Passam uma segurança
+              absurda para nós que somos pais de primeira viagem."
+            </p>
+            <strong
+              style="
+                display: block;
+                margin-top: 15px;
+                color: var(--dark-purple);
+                font-size: 0.85rem;
+              "
+              >— Thiago Souza, pai da Sofia</strong
+            >
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" class="cta-banner">
+        <div class="cta-text">
+          <i class="fa-regular fa-calendar-check"></i>
+          <div>
+            <h3>Pronto para agendar uma visita?</h3>
+            <p>
+              Escolha o melhor dia e horário diretamente pelo nosso painel
+              online.
+            </p>
+          </div>
+        </div>
+        <div class="cta-actions" id="wrapperAcoesAgendamento">
+          <button type="button" class="btn-white">
+            <i class="fa-solid fa-phone"></i> (11) 98989-9909
+          </button>
+          <button type="button" id="footerBtnAgendar" class="btn-white">
+            <i class="fa-regular fa-calendar"></i> Marcar Online
+          </button>
+        </div>
+      </section>
+
+      <footer>
+        <p>&copy; 2026 Mundo dos Pequenos - Portfólio Médico Avançado.</p>
+      </footer>
+    </div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
